@@ -1,25 +1,31 @@
-import {Component, ViewChild, AfterViewInit} from "@angular/core";
+import {Component, ViewChild, AfterViewInit, OnInit} from "@angular/core";
 import {DayPilot, DayPilotCalendarComponent} from "@daypilot/daypilot-lite-angular";
 import {DataService} from "./data.service";
 
+
 @Component({
   selector: 'calendar-component',
-  template: `<daypilot-calendar [config]="config" [events]="events" #calendar></daypilot-calendar>`,
-  styles: [``]
+  // template: ``,
+  templateUrl: './calendar.component.html',
+  styles: [
+    `
+    `
+  ]
 })
-export class CalendarComponent implements AfterViewInit {
+export class CalendarComponent implements AfterViewInit, OnInit {
 
   @ViewChild("calendar")
   calendar!: DayPilotCalendarComponent;
 
   events: any[] = [];
+  backgroundUrl: string = "https://h2909571.stratoserver.net/HellebrekerPackages/ResourceCalendar/External/images/hellebrekers-logo.png";
 
   config: DayPilot.CalendarConfig = {
     viewType: "Resources",
     locale: "en-us",
-    headerHeight: 50,
-    cellHeight: 24,
-
+    startDate: DayPilot.Date.today(),
+    headerHeight: 30,
+    cellHeight: 25,
     businessBeginsHour: 0,
     businessEndsHour: 24,
     timeRangeSelectedHandling: "Enabled",
@@ -54,10 +60,33 @@ export class CalendarComponent implements AfterViewInit {
         { text: "Delete", onClick: (args) => { const dp = args.source.calendar; dp.events.remove(args.source); } }
       ]
     }),
+
   };
+  sizeIconClassMaximize: string = 'fa fa-window-maximize';
+  sizeIconClassMin: string = 'fa fa-window-minimize';
+  sizeIconClass: string = this.sizeIconClassMaximize;
+
+  logoStyleDefault: any = `
+        width: 32px;
+        height: 32px;
+  `;
+
+  logoStyleMax: any = `
+        width:  48px;
+        height: 48px;
+  `;
+
+  logoStyle: any = this.logoStyleDefault;
+
+  currentDay: DayPilot.Date = DayPilot.Date.today();
 
   constructor(private ds: DataService) {
+
   }
+
+  ngOnInit(): void {
+  }
+
 
   ngAfterViewInit(): void {
     this.ds.getResources().subscribe(result => this.config.columns = result);
@@ -66,7 +95,49 @@ export class CalendarComponent implements AfterViewInit {
     this.ds.getEvents(from, to).subscribe(result => {
       this.events = result;
     });
+
+
+    //make top bar sticky
+    let elements = document.getElementsByClassName("calendar_default_main");
+    elements[0].children[0].classList.add("sticky-top");
   }
 
+  toggleFullscreen() {
+
+    // const element : HTMLElement | null = document.getElementById("content");
+    const element : HTMLElement | null =  window.parent.document.getElementById("ba");
+
+    if (element) {
+      if (element.classList.contains('fake-fullscreen')) {
+        this.sizeIconClass = this.sizeIconClassMaximize;
+        this.logoStyle = this.logoStyleDefault;
+        element.classList.remove('fake-fullscreen');
+        let test = document.exitFullscreen();
+        console.log(test);
+      } else {
+        element.classList.add('fake-fullscreen');
+        this.sizeIconClass = this.sizeIconClassMin;
+        this.logoStyle = this.logoStyleMax;
+        let test = document.documentElement.requestFullscreen();
+        console.log(test);
+      }
+    }else{
+      console.log("element not found");
+    }
+  }
+
+  changeDate(date: DayPilot.Date) {
+    this.currentDay = date;
+    this.calendar.control.startDate = this.currentDay;
+    this.calendar.control.update();
+  }
+
+  goDayForward() {
+    this.changeDate(this.currentDay.addDays(1));
+  }
+
+  goDayBackward() {
+    this.changeDate(this.currentDay.addDays(-1));
+  }
 }
 
