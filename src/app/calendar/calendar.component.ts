@@ -110,7 +110,8 @@ export class CalendarComponent implements AfterViewInit, OnInit {
   toggleFullscreen() {
 
     // const element : HTMLElement | null = document.getElementById("content");
-    const element : HTMLElement | null =  window.parent.document.getElementById("ba");
+    const element =
+      window.parent.document.getElementsByClassName("control-addin-container")[0];
 
     if (element) {
       if (element.classList.contains('fake-fullscreen')) {
