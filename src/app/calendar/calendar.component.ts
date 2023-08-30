@@ -9,6 +9,11 @@ import {DataService} from "./data.service";
   templateUrl: './calendar.component.html',
   styles: [
     `
+      button{
+        width: 32px;
+        height: 32px;
+        padding: 0px;
+      }
     `
   ]
 })
